@@ -1,0 +1,32 @@
+/* Design tokens — oxblood with peach ink and a cream logo. */
+:root {
+  --c-bg: #4a0e1e;        /* page colour (oxblood) */
+  --c-fg: #ffd9c7;        /* ink: text, rules, frame (peach) */
+  --c-muted: #c9958a;
+  --c-accent: #ffd9c7;
+  --c-logo: #e8d5b5;      /* warm beige (logo + the light colour inside dark stages) */
+  --c-work-bg: #2a0611;   /* dark stages (Work, contact circle) */
+  --c-frame: #2a0611;     /* viewport frame */
+  --c-line: var(--c-fg);  /* rules are solid ink, as in the reference */
+
+  --f-display: 'Archivo Variable', 'Arial Black', system-ui, sans-serif;
+  --f-display-wdth: 62%;  /* condensed cut for oversized headings */
+  --f-serif: 'Instrument Serif', Georgia, serif;
+  --f-body: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  --frame: clamp(8px, 1.25vw, 16px); /* thick ink viewport frame */
+  --gutter: clamp(16px, 3vw, 40px);
+  --header-h: clamp(64px, 7.55vw, 148px);
+  --ticker-h: clamp(36px, 2.75vw, 54px);
+
+  --fs-body: clamp(1rem, 0.4vw + 0.9rem, 1.2rem);
+  --fs-serif: clamp(1.4rem, 2.3vw, 2.15rem); /* large editorial serif text */
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --z-frame: 70;
+  --z-header: 60;
+  --z-intro: 100;
+}
+
+/* Breakpoints (reference only): sm 640px · md 900px · lg 1200px */

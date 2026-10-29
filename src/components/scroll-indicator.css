@@ -1,0 +1,8 @@
+/* Thumb runs inside the right bar of the ink frame (the native scrollbar is hidden) */
+.si {
+  position: fixed; z-index: calc(var(--z-frame) + 1); pointer-events: none;
+  right: 0; top: var(--frame); bottom: var(--frame); width: var(--frame);
+}
+.si__thumb { position: absolute; left: 25%; width: 50%; top: 0; background: var(--c-logo); border-radius: 4px; }
+html { scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }

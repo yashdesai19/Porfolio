@@ -1,0 +1,4 @@
+/* Ruled band, mark centred — like the reference ending */
+.footer { display: grid; place-items: center; height: var(--header-h); border-top: 1px solid var(--c-line); }
+.footer__mark { display: block; width: clamp(40px, 3.8vw, 52px); transition: transform .4s var(--ease-out); }
+.footer__mark:hover { transform: scaleY(1.15); }

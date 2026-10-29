@@ -1,0 +1,82 @@
+/* Ruled cell grid, part of the first screen (not fixed), like the reference */
+.header {
+  position: relative; z-index: var(--z-header);
+  display: grid; height: var(--header-h);
+  grid-template-columns: var(--header-h) minmax(0, 1fr) minmax(0, 1.5fr) calc(var(--header-h) / 2) minmax(0, 1.6fr);
+  border-bottom: 1px solid var(--c-line);
+  font: 500 .72rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .12em;
+}
+.hcell { display: flex; align-items: center; min-width: 0; margin: 0; border-right: 1px solid var(--c-line); }
+.header__lines, .header__burger { border-right: 0; }
+
+.header__logo { justify-content: center; }
+.header__mark { width: 52%; height: auto; }
+.header__tag { flex-direction: column; align-items: flex-start; justify-content: center; gap: .35rem; padding: 0 1.4rem; font-size: .58rem; }
+.header__tag span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+.header__desktop { justify-content: flex-start; padding: 0; }
+.header__nav { display: flex; align-items: center; height: 100%; margin: 0; padding: 0; list-style: none; }
+.header__nav a, .header__panel a, .header__socials a { text-decoration: none; }
+.header__socials a:hover { color: var(--c-accent); }
+
+.header__socials { flex-direction: column; align-items: stretch; padding: 0; }
+.header__socials li { flex: 1; display: grid; place-items: center; }
+.header__socials li + li { border-top: 1px solid var(--c-line); }
+.header__socials a { font: 700 .8rem/1 var(--f-mono); text-transform: none; }
+
+.header__burger { justify-content: center; background: none; border: 0; color: inherit; cursor: pointer; padding: 0; }
+
+.header__lines { flex-direction: column; align-items: stretch; padding: 0; text-transform: none; letter-spacing: 0; }
+.header__lines p { flex: 1; display: flex; align-items: center; gap: .4em; padding: 0 1.4rem; font-size: clamp(.95rem, 1.45vw, 1.35rem); white-space: nowrap; overflow: hidden; }
+.header__lines p + p { border-top: 1px solid var(--c-line); }
+.header__lines a { text-decoration: none; white-space: nowrap; }
+.header__lines a:hover { color: var(--c-accent); }
+
+.header__burger { display: none; }
+.header__burger span, .header__burger span::before {
+  display: block; width: 18px; height: 2px; background: currentColor; transition: transform .25s var(--ease-out);
+}
+.header__burger span { position: relative; transform: translateY(-3px); }
+.header__burger span::before { content: ''; position: absolute; top: 6px; }
+[data-menu='open'] .header__burger span { transform: rotate(45deg); }
+[data-menu='open'] .header__burger span::before { transform: translateY(-6px) rotate(-90deg); }
+
+.header__panel {
+  position: fixed; z-index: 1; left: var(--frame); right: var(--frame); bottom: var(--frame);
+  top: calc(var(--frame) + var(--header-h));
+  background: var(--c-bg); border-top: 1px solid var(--c-line); padding: 1rem var(--gutter);
+  display: grid; align-content: space-between;
+}
+.header__panel[hidden] { display: none; }
+.header__panel ul { display: grid; }
+.header__panel li { border-bottom: 1px solid var(--c-line); }
+.header__panel a { display: block; padding: .6rem 0 .3rem; font: 900 clamp(3rem, 18vw, 5rem)/.85 var(--f-display); font-stretch: 62%; }
+.header__panel-lines { font-size: 1.3rem; text-transform: none; letter-spacing: 0; padding-bottom: 1rem; }
+
+@media (max-width: 1000px) {
+  .header { grid-template-columns: var(--header-h) minmax(0, 1fr) minmax(0, 1.4fr) calc(var(--header-h) / 1.6); }
+  .header__lines { display: none; }
+}
+@media (max-width: 640px) {
+  .header { grid-template-columns: var(--header-h) minmax(0, 1fr) var(--header-h); }
+  .header__desktop, .header__socials { display: none; }
+  .header__burger { display: flex; }
+}
+
+/* Rolling console (8px mono log) */
+.console { display: grid; gap: .1rem; margin: 0; padding: 0; list-style: none; font-size: .5rem; letter-spacing: .08em; line-height: 1.4; }
+.console li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: console-in .35s var(--ease-out); }
+.console li:last-child::after { content: '_'; animation: blink 1s steps(1) infinite; }
+@keyframes console-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Nav, as in the reference: roomy mono links; on hover a small triangle blinks in and the text gains weight.
+   The link of the section on screen keeps its triangle. */
+.header__nav a { display: block; padding: 2rem clamp(1rem, 2.4vw, 3rem); font: 400 14px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--c-fg); }
+.nav__text { position: relative; display: inline-block; }
+.nav__text::before { content: ''; position: absolute; top: calc(50% - 3px); left: -13px; border-block: 3px solid transparent; border-left: 6px solid currentColor; opacity: 0; }
+.header__nav a:hover, .header__nav a:focus-visible { text-shadow: 0 0 1px currentColor; }
+.header__nav a:hover .nav__text::before, .header__nav a:focus-visible .nav__text::before { animation: nav-blink-in .3s cubic-bezier(1, 0, 0, 1) forwards; }
+.header__nav a[aria-current] .nav__text::before { opacity: 1; }
+@keyframes nav-blink-in { 0%, 20%, 60% { opacity: 0; } 10%, 40%, 80%, 100% { opacity: 1; } }
+.social-glyph { width: 16px; height: 16px; display: grid; place-items: center; font: 700 .85rem/1 var(--f-body); text-transform: none; letter-spacing: -.02em; }

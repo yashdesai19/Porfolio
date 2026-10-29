@@ -1,0 +1,58 @@
+@import './styles/fonts.css';
+@import './styles/tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--c-bg);
+  color: var(--c-fg);
+  font: 400 var(--fs-body)/1.5 var(--f-body);
+  transition: background-color .3s, color .3s;
+}
+a { color: inherit; }
+img, video, canvas, svg { display: block; max-width: 100%; }
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+
+:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.skip-link {
+  position: fixed; left: 1rem; top: -4rem; z-index: 200;
+  background: var(--c-fg); color: var(--c-bg); padding: .6rem 1rem;
+}
+.skip-link:focus { top: 1rem; }
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Framed viewport: thick ink border; page content lives inside it */
+.frame {
+  position: fixed; inset: 0; pointer-events: none; z-index: var(--z-frame);
+  border: var(--frame) solid var(--c-frame, var(--c-fg));
+}
+.page { padding: var(--frame); }
+.page > main, .page > header, .page > footer { position: relative; }
+
+.section { position: relative; }
+.eyebrow { font: 500 .7rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .14em; }
+.display { font-family: var(--f-display); font-weight: 900; font-stretch: var(--f-display-wdth); text-transform: uppercase; line-height: .8; letter-spacing: -.005em; }
+.serif { font-family: var(--f-serif); font-weight: 400; letter-spacing: -.01em; }
+.serif-i { font-family: var(--f-serif); font-style: italic; font-weight: 400; }
+.hatch { background: repeating-linear-gradient(-45deg, transparent 0 10px, var(--c-fg) 10px 11px); }
+.rule-t { border-top: 1px solid var(--c-line); }
+.rule-b { border-bottom: 1px solid var(--c-line); }
+
+/* Elements animated in by JS start hidden; reveal anyway if JS never runs */
+html.motion .reveal { visibility: hidden; animation: reveal-fallback 0s 3s forwards; }
+@keyframes reveal-fallback { to { visibility: visible; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

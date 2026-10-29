@@ -1,0 +1,51 @@
+/* First screen: header (grid) → line field → ticker → full-width headline → ticker */
+/* the first screen is exactly header + hero, like the reference: the lines take whatever height is left */
+.hero { position: relative; display: flex; flex-direction: column; min-height: calc(100svh - 2 * var(--frame) - var(--header-h)); }
+.hero__lines { position: relative; display: block; width: 100%; max-width: none; flex: 1 1 0; min-height: 120px; color: var(--c-fg); overflow: hidden; }
+.hero__lines canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.hero__dot { position: absolute; left: 0; top: 0; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--c-fg); pointer-events: none; opacity: 0; transition: opacity .3s; }
+.hero__title { padding: .1em .12em .06em; overflow: hidden; white-space: nowrap; font-size: 11vw; cursor: default; letter-spacing: 0; }
+.hero__visual { display: inline-flex; align-items: center; gap: .14em; }
+.hero__word { display: flex; white-space: nowrap; }
+.hero__star { width: .32em; height: .32em; fill: currentColor; flex: none; }
+/* the word gap inside 'AI Product': with the flex gap on both sides it adds up to one normal space */
+.hero__gap { width: 0; margin: 0 -.03em; }
+html.motion .hero__visual { visibility: hidden; animation: reveal-fallback 0s 3s forwards; }
+
+/* Glyph window: shows exactly one copy; the inner block carries a row (::before) and a column (::after) of copies */
+/* --tall stretches the glyphs vertically (Archivo is at its narrowest), so the headline is as tall as the reference's */
+.hero__title { --tall: 1.4; }
+.char { position: relative; display: block; height: calc(.8em * var(--tall)); line-height: .8; overflow: hidden; }
+.char--space { width: .22em; }
+.char__inner { position: relative; display: block; color: transparent; transform: scaleY(var(--tall)); transform-origin: 0 0; }
+/* the stretch lives inside transform (and every keyframe) so a running flip can never drop it */
+.char__inner::before {
+  content: attr(data-letter) attr(data-letter) attr(data-letter);
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%); color: var(--c-fg); white-space: nowrap;
+}
+.char__inner::after {
+  content: attr(data-letter) attr(data-letter) attr(data-letter);
+  position: absolute; top: 50%; left: 0; width: 100%; transform: translateY(-50%); color: var(--c-fg); word-break: break-all; white-space: normal;
+}
+/* glyphs only slide sideways now, so the column of copies (for up/down flips) is not drawn */
+.char__inner::after { display: none; }
+.flip-left .char__inner { animation: flip-left 1s cubic-bezier(.86, 0, .07, 1) forwards; }
+.flip-right .char__inner { animation: flip-right 1s cubic-bezier(.86, 0, .07, 1) forwards; }
+.flip-up .char__inner { animation: flip-up 1s cubic-bezier(.86, 0, .07, 1) forwards; }
+.flip-down .char__inner { animation: flip-down 1s cubic-bezier(.86, 0, .07, 1) forwards; }
+@keyframes flip-left { from { transform: scaleY(var(--tall)); } to { transform: translateX(-100%) scaleY(var(--tall)); } }
+@keyframes flip-right { from { transform: scaleY(var(--tall)); } to { transform: translateX(100%) scaleY(var(--tall)); } }
+@keyframes flip-up { to { transform: translateY(-100%); } }
+@keyframes flip-down { to { transform: translateY(100%); } }
+
+/* phones, and portrait tablets (one line would leave the headline tiny under a tall field of lines) */
+@media (max-width: 640px), (orientation: portrait) and (max-width: 1100px) {
+  /* two rows:  AI PRODUCT ✦  (smaller)  /  BUILDER  (larger, full width — the fit sizes the headline to this row) */
+  .hero__visual { display: inline-grid; grid-template-columns: auto auto auto; justify-content: start; grid-template-areas: 'a b s' 'c c c'; align-items: center; column-gap: .18em; row-gap: .04em; }
+  .hero__word--a { grid-area: a; font-size: .8em; }
+  .hero__word--b { grid-area: b; font-size: .8em; }
+  .hero__star { grid-area: s; justify-self: start; width: .42em; height: .42em; }
+  .hero__word--c { grid-area: c; font-size: 1.55em; }
+  .hero__gap { display: none; }
+  .hero__title { white-space: normal; }
+}

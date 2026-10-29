@@ -1,0 +1,70 @@
+/* Corridor: perspective grid walls either side of a central ruled column */
+.about { --col: min(39.25rem, calc(100% - 2 * var(--gutter))); position: relative; padding: 15rem 0; overflow: clip; }
+.about__corridor { position: absolute; inset: 0; pointer-events: none; }
+.about__walls { position: sticky; top: 0; height: 100svh; display: flex; justify-content: space-between; overflow: hidden; }
+.wall { position: relative; width: calc((100% - var(--col)) / 2); height: 100%; perspective: 420px; overflow: hidden; }
+.wall--l { perspective-origin: 100% 50%; }
+.wall--r { perspective-origin: 0% 50%; }
+.wall__plane {
+  position: absolute; top: -50%; bottom: -50%; width: 260%;
+  background:
+    linear-gradient(var(--c-line) 1px, transparent 1px) 0 0 / 100% 240px,
+    linear-gradient(90deg, var(--c-line) 1px, transparent 1px) 0 0 / 22% 100%;
+}
+.wall--l .wall__plane { right: 0; transform-origin: 100% 50%; transform: rotateY(68deg); }
+.wall--r .wall__plane { left: 0; transform-origin: 0% 50%; transform: rotateY(-68deg); }
+
+.about__col { position: relative; z-index: 2; width: var(--col); margin: 0 auto; border: 1px solid var(--c-line); background: var(--c-bg); }
+.about__bar { margin: 0; padding: 0 0 2px; background: var(--c-fg); color: var(--c-bg); font: 700 12px/24px var(--f-mono); letter-spacing: .1em; text-align: center; text-transform: uppercase; }
+.about__text { display: grid; gap: 1.5em; padding: 4.5rem; font-size: 2rem; line-height: 1.5; }
+.about__text p { font-weight: 400; }
+
+/* Awards grid: fixed 4 columns, cells .751 aspect; the hatch shows wherever no cell sits */
+.awards {
+  /* 4 columns × 6 rows of .751-aspect cells → whole grid aspect = 4 × .751 / 6 */
+  display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr); aspect-ratio: 0.5007;
+  margin: 0; padding: 0; list-style: none; overflow: hidden;
+  background: repeating-linear-gradient(-45deg, transparent 0 1px, var(--c-fg) 1.5px 2.5px, transparent 3px 11px);
+}
+.award { position: relative; overflow: hidden; background: var(--c-bg); user-select: none; }
+.award::before { content: ''; position: absolute; inset: -1px 0 0 -1px; border: 1px solid var(--c-line); pointer-events: none; z-index: 2; }
+.award__inner { position: relative; display: flex; width: 100%; height: 100%; padding: 1rem; }
+.award--text .award__inner { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.award--name .award__inner { flex-direction: column; align-items: flex-start; justify-content: flex-end; }
+.award--icon .award__inner { align-items: center; justify-content: center; }
+.award__name { font-size: 4.2rem; line-height: .82; white-space: pre-line; }
+.award--xl .award__name { font-size: 8.6rem; }
+.award--l .award__name { font-size: 5.4rem; }
+.award__counter { font-size: 1.25rem; line-height: 1.3; white-space: pre-line; }
+.award__text { display: block; font-size: 2.25rem; line-height: 1.13; text-wrap: balance; }
+.award__icon { width: 46%; fill: none; stroke: var(--c-fg); stroke-width: .8; }
+.award__tick { position: absolute; width: 12px; fill: var(--c-fg); }
+.award__tick--tl { top: 12px; left: 12px; } .award__tick--tr { top: 12px; right: 12px; }
+.award__tick--bl { bottom: 12px; left: 12px; } .award__tick--br { bottom: 12px; right: 12px; }
+.award__mask { display: none; }
+
+/* Motion: ink cover with a star wipes off to the right while the content slides in.
+   Driven by --p (0 → 1), written from the scroll position: no timers, it moves as fast as the scroll */
+.about.is-motion .award { --p: 0; }
+.about.is-motion .award__inner { translate: calc((1 - var(--p)) * -50%); transition: scale 1.5s cubic-bezier(.86, 0, .07, 1); }
+.about.is-motion .award__mask {
+  display: block; position: absolute; inset: -1px; z-index: 1; background: var(--c-fg);
+  clip-path: inset(0 0 0 calc(var(--p) * 100%));
+}
+.about.is-motion .award__mask::before {
+  content: ''; position: absolute; inset: 0; background: var(--c-logo);
+  clip-path: polygon(50% calc(50% - .75rem), calc(50% + .1rem) calc(50% - .1rem), calc(50% + .75rem) 50%, calc(50% + .1rem) calc(50% + .1rem), 50% calc(50% + .75rem), calc(50% - .1rem) calc(50% + .1rem), calc(50% - .75rem) 50%, calc(50% - .1rem) calc(50% - .1rem));
+  transform: translateX(calc(var(--p) * 50%));
+}
+.about.is-motion .award.is-active .award__inner { scale: .9; transition: scale .1s cubic-bezier(.23, 1, .32, 1); }
+
+.stickers { position: fixed; inset: 0; display: none; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; } /* shown by Stickers.tsx while active */
+
+@media (max-width: 900px) {
+  .about { padding: 7.5rem 0; }
+  .wall { width: var(--gutter); }
+  .about__text { padding: 15vw 10vw; font-size: 1.5rem; }
+  .award__name { font-size: 2.2rem; } .award--xl .award__name { font-size: 3.8rem; } .award--l .award__name { font-size: 1.9rem; }
+  .award__inner { padding: .6rem; }
+  .award__text { font-size: 1.15rem; } .award__counter { font-size: 1rem; }
+}

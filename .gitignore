@@ -1,0 +1,17 @@
+node_modules
+dist
+.vercel
+*.log
+.DS_Store
+*.local
+.vscode/*
+!.vscode/extensions.json
+dist-ssr
+
+# source/unused media kept locally, not deployed
+media-src
+
+# internal project and reference notes kept out of the public repository
+/COMPARISON.md
+/PROJECT_STATUS.md
+/REFERENCE_GAP_AUDIT.md

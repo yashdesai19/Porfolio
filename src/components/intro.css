@@ -1,0 +1,17 @@
+.intro { display: none; }
+html.is-intro { overflow: hidden; }
+html.is-intro .intro {
+  position: fixed; inset: 0; z-index: var(--z-intro);
+  display: grid; place-items: center;
+  background: var(--c-bg);
+  clip-path: inset(0% 0% 0% 0%);
+}
+/* the mark sits on the band's line, centred in the viewport */
+.intro__stack { position: absolute; left: 0; right: 0; top: 50%; display: grid; justify-items: center; }
+.intro__mark { width: clamp(44px, 4.5vw, 64px); height: auto; overflow: visible; translate: 0 -100%; margin-bottom: 4px; }
+.intro__band { position: absolute; left: 0; right: 0; top: 0; height: 14px; translate: 0 -50%; background: var(--c-fg); transform: scaleX(0); }
+.intro__hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  font: .7rem var(--f-mono); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--c-muted);
+}

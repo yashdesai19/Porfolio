@@ -1,0 +1,21 @@
+/* Static ruled strip: ▸ bits ////// bits ////// … ◂ */
+.ticker {
+  position: relative; display: flex; align-items: center; height: var(--ticker-h); padding: 0 1rem;
+  border-top: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line);
+  font: 400 8px/16px var(--f-mono); overflow: hidden;
+}
+.ticker + .ticker { border-top: 0; }
+.ticker__tri { position: absolute; top: 50%; translate: 0 -40%; border-top: 2px solid transparent; border-bottom: 2px solid transparent; }
+.ticker__tri--l { left: 1rem; border-left: 4px solid currentColor; }
+.ticker__tri--r { right: 1rem; border-right: 4px solid currentColor; }
+.ticker__row { display: flex; flex: 1; min-width: 0; padding: 0 .7rem; overflow: hidden; }
+.ticker__set { display: flex; align-items: center; flex: 1 1 0; min-width: 0; overflow: hidden; }
+.ticker__set:last-child { flex: 0 0 auto; }
+/* keyword slot: rolls up and out, the next word rolls in from below */
+.ticker__word { display: block; flex: none; height: 16px; overflow: hidden; letter-spacing: .14em; }
+.tk-word { display: block; transition: transform .45s cubic-bezier(.86, 0, .07, 1), opacity .45s; }
+.tk-word.is-out { transform: translateY(-100%); opacity: 0; }
+.tk-word.is-in { transform: translateY(100%); opacity: 0; transition: none; }
+.ticker__slash { flex: 1; min-width: 0; height: 8px; margin: 0 8px; overflow: hidden; text-shadow: 0 0 1px var(--c-fg); line-height: 8px; }
+.ticker__slash::before { content: '//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////'; word-break: break-all; }
+@media (max-width: 640px) { .ticker__set:nth-child(n+4):not(:last-child) { display: none; } }

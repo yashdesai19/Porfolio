@@ -1,0 +1,116 @@
+/* ---------- Base (no motion / no JS): heading + responsive grid of clips ---------- */
+.work__heading { font-size: clamp(4rem, 14vw, 12rem); padding: 2rem 1rem 0; border-bottom: 1px solid var(--c-line); }
+.work__track, .work__stage, .work__window { position: relative; }
+.work__wall, .work__count, .work__ring { display: none; }
+.work__list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.wcard { display: grid; gap: .5rem; padding: 1rem; border-right: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); }
+.wcard:focus-visible { outline-offset: -4px; }
+.wcard__media { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--c-work-bg); }
+.wcard__media video { width: 100%; height: 100%; object-fit: cover; }
+.wcard__label { display: flex; justify-content: space-between; gap: 1rem;
+  font: 500 .66rem/1.2 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--c-fg); }
+.wcard__title { font: inherit; }
+.wcard__title a { text-decoration: none; }
+.wcard__tagline { font-family: var(--f-serif); font-size: 1.1rem; }
+
+/* Placeholder preview surfaces: abstract product UIs, one look per project, four layouts */
+.ph { position: absolute; inset: 0; display: grid; grid-template-rows: auto 1fr; --ph-bg: #f6f3ee; --ph-ink: #111110; --ph-acc: var(--c-logo); background: var(--ph-bg); color: var(--ph-ink); }
+.ph--dhan { --ph-bg: #e9edff; --ph-acc: var(--c-accent); }
+.ph--gamebling { --ph-bg: #161616; --ph-ink: #f0ede6; --ph-acc: #d6ff3b; }
+.ph__bar { display: flex; align-items: center; gap: .35em; padding: .5em .7em; border-bottom: 1px solid color-mix(in srgb, var(--ph-ink) 20%, transparent);
+  font: 600 clamp(.4rem, .62vw, .62rem)/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; }
+.ph__bar i { width: .6em; height: .6em; border-radius: 50%; background: color-mix(in srgb, var(--ph-ink) 30%, transparent); }
+.ph__bar span:nth-of-type(1) { margin-left: .6em; }
+.ph__bar span:nth-of-type(2) { margin-left: auto; color: var(--ph-acc); }
+.ph__body { position: relative; display: grid; align-content: center; gap: 6%; padding: 7% 8%; overflow: hidden; }
+.ph__title { font: 900 clamp(1.4rem, 3.6vw, 3.4rem)/.85 var(--f-display); font-stretch: 62%; text-transform: uppercase; }
+.ph__line { height: .5em; width: 70%; background: color-mix(in srgb, var(--ph-ink) 18%, transparent); }
+.ph__line--s { width: 40%; background: var(--ph-acc); }
+.ph--v1 .ph__body, .ph--v2 .ph__body { align-content: stretch; }
+.ph__grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 8%; }
+.ph__grid span { background: color-mix(in srgb, var(--ph-ink) 16%, transparent); }
+.ph__grid span:nth-child(2), .ph__grid span:nth-child(6) { background: var(--ph-acc); }
+.ph__bars { display: flex; align-items: flex-end; gap: 5%; border-bottom: 1px solid var(--ph-ink); }
+.ph__bars span { flex: 1; background: color-mix(in srgb, var(--ph-ink) 80%, transparent); }
+.ph__bars span:nth-child(4) { background: var(--ph-acc); }
+.ph--v3 .ph__body { grid-template-columns: auto 1fr; align-items: center; gap: 8%; }
+.ph__phone { width: clamp(30px, 4vw, 58px); aspect-ratio: 9 / 18; border: 3px solid var(--ph-ink); border-radius: 10px; display: grid; padding: 12% 10%; }
+.ph__phone span { background: var(--ph-acc); border-radius: 3px; }
+.ph__rows { display: grid; gap: .6em; }
+.ph__rows span { height: .7em; background: color-mix(in srgb, var(--ph-ink) 18%, transparent); }
+.ph__rows span:first-child { width: 60%; background: var(--ph-ink); }
+
+/* ---------- Motion: pinned stage (class added by Work.tsx) ---------- */
+.work.is-stage .work__heading { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+.work.is-stage .work__track { height: calc(var(--track) * 100lvh); }
+.work.is-stage .work__stage {
+  position: sticky; top: var(--frame); height: calc(100svh - 2 * var(--frame)); overflow: hidden;
+  /* phones: the large viewport, so no strip shows when the address bar slides away */
+  height: calc(100lvh - 2 * var(--frame));
+  /* the page around the pill hole: ruled grid on the page colour */
+  background:
+    linear-gradient(var(--c-line) 1px, transparent 1px) 0 0 / 100% 12.5%,
+    linear-gradient(90deg, var(--c-line) 1px, transparent 1px) 50% 0 / 8.333% 100%,
+    var(--c-bg);
+}
+.work.is-stage .work__window {
+  position: absolute; inset: 0; overflow: hidden;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--c-logo) 40%, transparent) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    var(--c-work-bg);
+}
+/* outline drawn just outside the pill; scaled with the hole by JS */
+.work.is-stage .work__ring {
+  display: block; position: absolute; left: 50%; top: 50%; pointer-events: none;
+  width: calc(var(--pill-w) + 24px); height: calc((100svh - 2 * var(--frame)) * .8 + 24px);
+  border: 1px solid var(--c-fg); border-radius: 999px; will-change: transform, opacity; /* scaled by JS: no repaint */
+  --pill-w: min(calc((100vw - 2 * var(--frame)) / 6), 314px);
+}
+@media (orientation: portrait) { .work.is-stage .work__ring { --pill-w: min(calc((100vw - 2 * var(--frame)) / 3), 314px); } }
+@media (orientation: portrait) and (max-width: 600px) { .work.is-stage .work__ring { --pill-w: calc((100vw - 2 * var(--frame)) / 2); } }
+
+/* Flat layering like the reference (letters 1, cards 2, a few letters 3): no shared 3D space, so a turning card never
+   cuts through a letter. Wall, rows and list are display: contents, so every letter and card is a direct child of the scene
+   and gets its perspective. */
+.work.is-stage .work__scene { position: absolute; inset: 0; perspective: 40rem; }
+
+/* Letter rows: stacked tightly around the middle, like the reference */
+.work.is-stage .work__wall, .work.is-stage .wall__row { display: contents; }
+/* reference sizes: min(18.75rem, 25lvh), rows .85em apart (the stacked WORK title) */
+.work.is-stage { --fs: min(18.75rem, 25lvh); --lh: calc(var(--fs) * .85); }
+.wall__letter {
+  position: absolute; left: 50%; top: calc(50% + (var(--row) - 1.5) * var(--lh)); z-index: 1; pointer-events: none;
+  font: 900 var(--fs)/.85 var(--f-display); font-stretch: 62%; color: var(--c-logo);
+  will-change: transform;
+}
+/* shadow copy behind each letter, scaled and pushed toward the centre → extruded look */
+.wall__letter::before {
+  content: attr(data-letter); position: absolute; inset: 0; z-index: -1; color: color-mix(in srgb, var(--c-logo) 38%, #000);
+  transform-origin: calc(50% - var(--head, 0) * 50%) -50%;
+  transform: scale(1.05, 1.02) translateX(calc(var(--head, 0) * .1rem));
+}
+
+/* Cards: dark frame around the clip, caption underneath */
+.work.is-stage .wall__letter[data-front] { z-index: 3; }
+.work.is-stage .work__list { display: contents; }
+.work.is-stage .wcard {
+  position: absolute; left: 50%; top: 50%; z-index: 2; display: block; padding: .5rem .5rem 0; border: 0;
+  background: var(--c-work-bg); visibility: hidden; will-change: transform;
+}
+.work.is-stage .wcard__media { width: min(34vw, calc(40svh * 16 / 9)); aspect-ratio: 16 / 9; background: #000; }
+.work.is-stage .wcard:not([data-active]) { pointer-events: none; }
+.work.is-stage .wcard__tagline { display: none; }
+.work.is-stage .wcard__label { padding: .5rem 0; color: var(--c-logo); font: 700 11px/1 var(--f-mono); letter-spacing: .15em; }
+
+.work.is-stage .work__count {
+  display: none; position: absolute; z-index: 3; left: 1.25rem; bottom: 1.1rem; /* reference shows no counter */
+  font: 500 .66rem/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--c-logo); mix-blend-mode: difference;
+}
+.work__current { font-weight: 700; }
+
+@media (max-width: 576px) {
+  .work.is-stage .wcard { padding: .25rem; }
+  .work.is-stage .wcard__media { width: 80vw; }
+  .work.is-stage .wcard__label { display: none; }
+}
