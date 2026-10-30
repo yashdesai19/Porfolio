@@ -76,7 +76,7 @@
 /* Flat layering like the reference (letters 1, cards 2, a few letters 3): no shared 3D space, so a turning card never
    cuts through a letter. Wall, rows and list are display: contents, so every letter and card is a direct child of the scene
    and gets its perspective. */
-.work.is-stage .work__scene { position: absolute; inset: 0; z-index: 1; perspective: 40rem; }
+.work.is-stage .work__scene { position: absolute; inset: 0; perspective: 40rem; }
 
 /* Letter rows: stacked tightly around the middle, like the reference */
 .work.is-stage .work__wall, .work.is-stage .wall__row { display: contents; }

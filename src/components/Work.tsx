@@ -65,7 +65,7 @@ export function Work() {
   const ref = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    if (!motionAllowed() || getTier() !== 'high') return
+    if (!motionAllowed()) return
     const section = ref.current!
     const track = section.querySelector<HTMLElement>('.work__track')!
     const stage = section.querySelector<HTMLElement>('.work__stage')!
@@ -82,11 +82,12 @@ export function Work() {
     // Everything render() needs is read here, never per frame (no layout reads in the scroll path)
     const letterI = letters.map((el) => Number(el.dataset.i)), letterR = letters.map((el) => Number(el.dataset.r))
     const lastHead = new Float32Array(letters.length).fill(NaN)
-    const hidden = letters.map(() => true)
+    const hidden = letters.map(() => false)
     const cardOn = cardEls.map(() => false)
     // Each row drifts at its own speed, as in the reference
     const FREQ = [1.35, 1.8, 1.15, 1.6]
     let n = PER_ROW, cw: number[] = [], ch: number[] = [], useSm = false, small = false
+    let dynExtrude = getTier() === 'high'
     // Values tweened by the timeline (scrubbed by scroll)
     const st = { hole: 0, scene: 0.75, state: 0, anim: 0 }
     const cp = cardEls.map(() => ({ p: 1 })) // +1 off right … −1 off left
@@ -105,7 +106,7 @@ export function Work() {
       // (our glyphs are wider than the reference font, so a few more copies keep the same density)
       n = Math.min(PER_ROW, Math.round((W / lw) * (W > 767 ? 1.1 : 0.75)) + 2)
       letters.forEach((el, k) => { el.style.display = letterI[k] < n ? '' : 'none'; el.style.visibility = '' })
-      hidden.fill(true)
+      hidden.fill(false)
       cw = cardEls.map((c) => c.offsetWidth); ch = cardEls.map((c) => c.offsetHeight)
       useSm = getTier() !== 'high' || window.innerWidth < 900
       speed = Math.hypot(W, H) * 4
@@ -143,8 +144,10 @@ export function Work() {
         const yy = ROW_Y[row] * lh * 0.5 * head * head * state
         const rot = (-10 * head * state).toFixed(2)
         el.style.transform = `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${yy.toFixed(1)}px, 0) rotateY(${rot}deg)`
-        const hq = Math.round(head * state * state * 20) / 20
-        if (hq !== lastHead[k]) { lastHead[k] = hq; el.style.setProperty('--head', String(hq)) }
+        if (dynExtrude) {
+          const hq = Math.round(head * state * state * 20) / 20
+          if (hq !== lastHead[k]) { lastHead[k] = hq; el.style.setProperty('--head', String(hq)) }
+        }
       }
 
       // Cards glide right → left, slowing through the middle.
@@ -175,7 +178,9 @@ export function Work() {
           if (play) {
             if (!v.hasAttribute('src') && v.dataset.src) v.src = (useSm && v.dataset.srcSm) || v.dataset.src
             if (v.paused) v.play().catch(() => { /* autoplay refused: poster stays */ })
-          } else if (v.hasAttribute('src')) {
+          } else if (on && v.hasAttribute('src')) {
+            v.pause()
+          } else if (!on && v.hasAttribute('src')) {
             v.pause()
             v.removeAttribute('src')
             v.load()
@@ -238,6 +243,11 @@ export function Work() {
       clearTimeout(rt); rt = window.setTimeout(() => { measure(); build() }, 150)
     }
     window.addEventListener('resize', onResize)
+    const offTier = onTierChange((t) => {
+      dynExtrude = t === 'high'
+      if (!dynExtrude) letters.forEach((el) => el.style.removeProperty('--head'))
+      lastHead.fill(NaN); measure(); render()
+    })
     // Keyboard: focusing a card scrolls to the moment that card is centre-stage
     const onFocus = (e: FocusEvent) => {
       const i = cardEls.findIndex((c) => c.contains(e.target as Node))
@@ -250,46 +260,18 @@ export function Work() {
     }
     section.addEventListener('focusin', onFocus)
 
-    const deactivateStage = (refresh: boolean) => {
-      const previousY = window.scrollY
-      const trackRect = track.getBoundingClientRect()
-      const trackTop = trackRect.top + previousY
-      const previousTrackHeight = trackRect.height
-      section.removeEventListener('focusin', onFocus)
+    return () => {
+      section.removeEventListener('focusin', onFocus); offTier()
       window.removeEventListener('resize', onResize); clearTimeout(rt)
-      if (renderFrame) { window.cancelAnimationFrame(renderFrame); renderFrame = 0 }
-      pin.kill(); tl?.scrollTrigger?.kill(); tl?.kill(); tl = null
+      if (renderFrame) window.cancelAnimationFrame(renderFrame)
+      pin.kill(); tl?.scrollTrigger?.kill(); tl?.kill()
       section.classList.remove('is-stage')
       videos.forEach((v) => {
         if (!v) return
         v.pause()
         if (v.hasAttribute('src')) { v.removeAttribute('src'); v.load() }
       })
-      cardEls.forEach((card) => { card.removeAttribute('data-on'); card.removeAttribute('data-active') })
       ;[win, ring, scene, ...letters, ...cardEls].forEach((el) => el.removeAttribute('style'))
-      if (refresh) {
-        const nextTrackHeight = track.getBoundingClientRect().height
-        let nextY = previousY
-        if (previousY >= trackTop + previousTrackHeight) {
-          nextY = previousY - previousTrackHeight + nextTrackHeight
-        } else if (previousY >= trackTop) {
-          const progress = (previousY - trackTop) / Math.max(1, previousTrackHeight - window.innerHeight)
-          nextY = trackTop + progress * Math.max(0, nextTrackHeight - window.innerHeight)
-        }
-        const lenis = getLenis()
-        if (nextY !== previousY) {
-          if (lenis) lenis.scrollTo(nextY, { immediate: true })
-          else window.scrollTo(0, nextY)
-        }
-        ScrollTrigger.refresh()
-      }
-    }
-
-    const offTier = onTierChange((t) => { if (t !== 'high') deactivateStage(true) })
-
-    return () => {
-      offTier()
-      deactivateStage(false)
     }
   }, [])
 
