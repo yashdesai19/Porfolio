@@ -78,7 +78,7 @@ export function Work() {
     const counter = section.querySelector('.work__current')!
     section.classList.add('is-stage')
 
-    let W = 0, H = 0, stickTop = 0, shift = 0, pillW = 0, pillH = 0, lw = 0, lh = 0, maxScale = 1, speed = 1
+    let W = 0, H = 0, stickTop = 0, trackTop = 0, trackHeight = 0, stageHeight = 0, shift = 0, pillW = 0, pillH = 0, lw = 0, lh = 0, maxScale = 1, speed = 1
     // Everything render() needs is read here, never per frame (no layout reads in the scroll path)
     const letterI = letters.map((el) => Number(el.dataset.i)), letterR = letters.map((el) => Number(el.dataset.r))
     const lastHead = new Float32Array(letters.length).fill(NaN)
@@ -92,6 +92,12 @@ export function Work() {
     const st = { hole: 0, scene: 0.75, state: 0, anim: 0 }
     const cp = cardEls.map(() => ({ p: 1 })) // +1 off right … −1 off left
 
+    const measureTrack = () => {
+      trackTop = track.getBoundingClientRect().top + window.scrollY
+      trackHeight = track.offsetHeight
+      stageHeight = stage.offsetHeight
+    }
+
     const measure = () => {
       W = stage.clientWidth; H = stage.clientHeight
       pillW = Math.min(W * (W > H ? 1 / 6 : W > 600 ? 1 / 3 : 1 / 2), 314); pillH = H * 0.8
@@ -101,6 +107,7 @@ export function Work() {
       ring.style.width = `${pillW + 24}px`; ring.style.height = `${pillH + 24}px`
       lw = letters[0].offsetWidth; lh = letters[0].offsetHeight
       stickTop = parseFloat(getComputedStyle(stage).top) || 0
+      measureTrack()
       small = W <= 576 || (W <= 767 && W > H)
       // Copies per row, as in the reference: enough to keep the loop full across the screen
       // (our glyphs are wider than the reference font, so a few more copies keep the same density)
@@ -228,8 +235,13 @@ export function Work() {
     // (and again once it lets go) the scene is shifted back by however far the stage is from its stuck position.
     const pin = ScrollTrigger.create({
       trigger: track, start: 'top bottom', end: 'bottom top',
-      onUpdate: () => {
-        const next = stickTop - stage.getBoundingClientRect().top
+      onRefresh: measureTrack,
+      onUpdate: (trigger) => {
+        const scrollY = trigger.scroll()
+        const normalTop = trackTop - scrollY
+        const stickyEndTop = trackTop + trackHeight - stageHeight - scrollY
+        const stageTop = Math.min(Math.max(normalTop, stickTop), stickyEndTop)
+        const next = stickTop - stageTop
         if (Math.abs(next - shift) < 0.5) return
         shift = next; scheduleRender()
       },
