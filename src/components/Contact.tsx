@@ -176,16 +176,16 @@ function ContactInfo() {
     if (f.get('botcheck')) return // honeypot
     const name = String(f.get('name') || '').trim(), from = String(f.get('email') || '').trim(), idea = String(f.get('idea') || '').trim()
     const what = topics.length ? topics.join(', ') : 'something'
-    const body = `Hi Yash, my name is ${name} and I want to build ${what}.\n\n${idea}\n\nReach me at ${from}`
+    const body = `NEW PROJECT INQUIRY\n\n${idea}\n\nPROJECT\n${what}\n\nFROM\n${name} <${from}>\n\nYASH DESAI / PORTFOLIO`
     if (!FORM_KEY) {
-      window.location.href = `mailto:${site.contact.email}?subject=${encodeURIComponent(`New project — ${name}`)}&body=${encodeURIComponent(body)}`
+      window.location.href = `mailto:${site.contact.email}?subject=${encodeURIComponent(`Portfolio inquiry — ${what} · ${name}`)}&body=${encodeURIComponent(body)}`
       setState('sent'); return
     }
     setState('sending')
     try {
       const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ access_key: FORM_KEY, subject: `Portfolio: ${name} — ${what}`, from_name: name, name, email: from, topics: what, message: body }),
+        body: JSON.stringify({ access_key: FORM_KEY, subject: `Portfolio inquiry — ${what} · ${name}`, from_name: 'Yash Desai / Portfolio', name, email: from, replyto: from, topics: what, message: body }),
       })
       setState((await res.json()).success ? 'sent' : 'error')
     } catch { setState('error') }
