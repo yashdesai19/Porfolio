@@ -65,7 +65,7 @@ export function Work() {
   const ref = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    if (!motionAllowed()) return
+    if (!motionAllowed() || getTier() !== 'high') return
     const section = ref.current!
     const track = section.querySelector<HTMLElement>('.work__track')!
     const stage = section.querySelector<HTMLElement>('.work__stage')!
@@ -82,14 +82,11 @@ export function Work() {
     // Everything render() needs is read here, never per frame (no layout reads in the scroll path)
     const letterI = letters.map((el) => Number(el.dataset.i)), letterR = letters.map((el) => Number(el.dataset.r))
     const lastHead = new Float32Array(letters.length).fill(NaN)
-    const hidden = letters.map(() => false)
+    const hidden = letters.map(() => true)
     const cardOn = cardEls.map(() => false)
     // Each row drifts at its own speed, as in the reference
     const FREQ = [1.35, 1.8, 1.15, 1.6]
     let n = PER_ROW, cw: number[] = [], ch: number[] = [], useSm = false, small = false
-    // Extrusion that follows each letter's position repaints the letter; only the high tier pays for it (rounded to 0.05 steps)
-    let dynExtrude = getTier() === 'high'
-
     // Values tweened by the timeline (scrubbed by scroll)
     const st = { hole: 0, scene: 0.75, state: 0, anim: 0 }
     const cp = cardEls.map(() => ({ p: 1 })) // +1 off right … −1 off left
@@ -108,7 +105,7 @@ export function Work() {
       // (our glyphs are wider than the reference font, so a few more copies keep the same density)
       n = Math.min(PER_ROW, Math.round((W / lw) * (W > 767 ? 1.1 : 0.75)) + 2)
       letters.forEach((el, k) => { el.style.display = letterI[k] < n ? '' : 'none'; el.style.visibility = '' })
-      hidden.fill(false)
+      hidden.fill(true)
       cw = cardEls.map((c) => c.offsetWidth); ch = cardEls.map((c) => c.offsetHeight)
       useSm = getTier() !== 'high' || window.innerWidth < 900
       speed = Math.hypot(W, H) * 4
@@ -125,7 +122,7 @@ export function Work() {
       ring.style.opacity = String(1 - st.hole)
       scene.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0) scale(${st.scene.toFixed(4)})`
       // the dots drift left with the letters
-      win.style.backgroundPosition = `${((-anim * 0.05) % 22).toFixed(1)}px 0, 0 0`
+      win.style.setProperty('--dot-shift', `${((-anim * 0.05) % 22).toFixed(1)}px`)
 
       // Letters: each row is a loop of copies; at state 0 they all sit on the centre column (the WORK title)
       for (let k = 0; k < letters.length; k++) {
@@ -137,15 +134,17 @@ export function Work() {
         const x = head * (W / 2) * state
         // Off-screen letters are hidden once and skipped until they come back
         const off = Math.abs(x) > W / 2 + lw
-        if (off !== hidden[k]) { hidden[k] = off; el.style.visibility = off ? 'hidden' : '' }
+        if (off !== hidden[k]) {
+          hidden[k] = off
+          el.style.visibility = off ? 'hidden' : ''
+          el.style.willChange = off ? 'auto' : 'transform'
+        }
         if (off) continue
         const yy = ROW_Y[row] * lh * 0.5 * head * head * state
         const rot = (-10 * head * state).toFixed(2)
         el.style.transform = `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${yy.toFixed(1)}px, 0) rotateY(${rot}deg)`
-        if (dynExtrude) {
-          const hq = Math.round(head * state * state * 20) / 20
-          if (hq !== lastHead[k]) { lastHead[k] = hq; el.style.setProperty('--head', String(hq)) }
-        }
+        const hq = Math.round(head * state * state * 20) / 20
+        if (hq !== lastHead[k]) { lastHead[k] = hq; el.style.setProperty('--head', String(hq)) }
       }
 
       // Cards glide right → left, slowing through the middle.
@@ -154,27 +153,35 @@ export function Work() {
       const maxPlay = saveData() ? 0 : 1
       let nearest = -1, best = 9
       for (let i = 0; i < cardEls.length; i++) {
+        const aP = Math.abs(cp[i].p)
+        if (aP < 1 && aP < best) { best = aP; nearest = i }
+      }
+      for (let i = 0; i < cardEls.length; i++) {
         const card = cardEls[i], P = cp[i].p, aP = Math.abs(P)
         const on = aP < 1
         // data-on also un-pauses the card's animated preview
-        if (on !== cardOn[i]) { cardOn[i] = on; card.style.visibility = on ? 'visible' : 'hidden'; card.toggleAttribute('data-on', on) }
+        if (on !== cardOn[i]) {
+          cardOn[i] = on
+          card.style.visibility = on ? 'visible' : 'hidden'
+          card.style.willChange = on ? 'transform' : 'auto'
+          card.toggleAttribute('data-on', on)
+        }
         card.toggleAttribute('data-active', on && aP < 0.4)
         const v = videos[i]
         if (v) {
-          let rank = 0 // on-screen cards closer to the centre than this one
-          if (on) for (let j = 0; j < cardEls.length; j++) {
-            const aj = Math.abs(cp[j].p)
-            if (j !== i && aj < 1 && (aj < aP || (aj === aP && j < i))) rank++
-          }
-          const play = on && rank < maxPlay
+          const play = on && i === nearest && maxPlay > 0
           // src only when this card is the one to play: until then the poster shows (a loaded, never-played
           // clip would show its first frame instead, often black)
-          if (play && !v.src && v.dataset.src) v.src = (useSm && v.dataset.srcSm) || v.dataset.src
-          if (play && v.paused) v.play().catch(() => { /* autoplay refused: poster stays */ })
-          else if (!play && !v.paused) v.pause()
+          if (play) {
+            if (!v.hasAttribute('src') && v.dataset.src) v.src = (useSm && v.dataset.srcSm) || v.dataset.src
+            if (v.paused) v.play().catch(() => { /* autoplay refused: poster stays */ })
+          } else if (v.hasAttribute('src')) {
+            v.pause()
+            v.removeAttribute('src')
+            v.load()
+          }
         }
         if (!on) continue
-        if (aP < best) { best = aP; nearest = i }
         const size = W <= 987 ? 1 : SIZES[i % SIZES.length]
         const oy = OFFS[i % OFFS.length] * ch[i] * (small ? 1 : 0.5)
         card.style.transform = `translate(-50%, -50%) rotateY(${(-20 * P).toFixed(2)}deg) translate3d(${(P * (W / 2 + cw[i] * size)).toFixed(1)}px, ${oy.toFixed(1)}px, ${(-P * P * 80).toFixed(1)}px) scale(${size})`
@@ -184,11 +191,16 @@ export function Work() {
 
     // The reference's timeline: open (hole, scene, letters fan out) → cards one by one → close; all scrubbed by scroll
     let tl: gsap.core.Timeline | null = null
+    let renderFrame = 0
+    const scheduleRender = () => {
+      if (renderFrame) return
+      renderFrame = window.requestAnimationFrame(() => { renderFrame = 0; render() })
+    }
     const build = () => {
       const prev = tl?.progress() ?? 0
       tl?.scrollTrigger?.kill(); tl?.kill()
       tl = gsap.timeline({
-        onUpdate: render,
+        onUpdate: scheduleRender,
         scrollTrigger: {
           trigger: track, start: 'top 25%', end: 'bottom 75%', scrub: 1,
           onLeave: () => videos.forEach((v) => v?.pause()),
@@ -214,7 +226,7 @@ export function Work() {
       onUpdate: () => {
         const next = stickTop - stage.getBoundingClientRect().top
         if (Math.abs(next - shift) < 0.5) return
-        shift = next; render()
+        shift = next; scheduleRender()
       },
     })
     // Like the reference: re-measure and rebuild on resize (widths, pill and letter copies all change)
@@ -226,12 +238,6 @@ export function Work() {
       clearTimeout(rt); rt = window.setTimeout(() => { measure(); build() }, 150)
     }
     window.addEventListener('resize', onResize)
-    const offTier = onTierChange((t) => {
-      dynExtrude = t === 'high'
-      if (!dynExtrude) letters.forEach((el) => el.style.removeProperty('--head'))
-      lastHead.fill(NaN); measure(); render()
-    })
-
     // Keyboard: focusing a card scrolls to the moment that card is centre-stage
     const onFocus = (e: FocusEvent) => {
       const i = cardEls.findIndex((c) => c.contains(e.target as Node))
@@ -244,13 +250,46 @@ export function Work() {
     }
     section.addEventListener('focusin', onFocus)
 
-    return () => {
-      section.removeEventListener('focusin', onFocus); offTier()
+    const deactivateStage = (refresh: boolean) => {
+      const previousY = window.scrollY
+      const trackRect = track.getBoundingClientRect()
+      const trackTop = trackRect.top + previousY
+      const previousTrackHeight = trackRect.height
+      section.removeEventListener('focusin', onFocus)
       window.removeEventListener('resize', onResize); clearTimeout(rt)
-      pin.kill(); tl?.scrollTrigger?.kill(); tl?.kill()
+      if (renderFrame) { window.cancelAnimationFrame(renderFrame); renderFrame = 0 }
+      pin.kill(); tl?.scrollTrigger?.kill(); tl?.kill(); tl = null
       section.classList.remove('is-stage')
-      videos.forEach((v) => v?.pause())
-      ;[win, ring, scene, ...letters, ...cardEls].forEach((el) => { el.style.cssText = el.style.cssText.replace(/(clip-path|transform|opacity|visibility|display|background-position|width|height|--head)[^;]*;?/g, '') })
+      videos.forEach((v) => {
+        if (!v) return
+        v.pause()
+        if (v.hasAttribute('src')) { v.removeAttribute('src'); v.load() }
+      })
+      cardEls.forEach((card) => { card.removeAttribute('data-on'); card.removeAttribute('data-active') })
+      ;[win, ring, scene, ...letters, ...cardEls].forEach((el) => el.removeAttribute('style'))
+      if (refresh) {
+        const nextTrackHeight = track.getBoundingClientRect().height
+        let nextY = previousY
+        if (previousY >= trackTop + previousTrackHeight) {
+          nextY = previousY - previousTrackHeight + nextTrackHeight
+        } else if (previousY >= trackTop) {
+          const progress = (previousY - trackTop) / Math.max(1, previousTrackHeight - window.innerHeight)
+          nextY = trackTop + progress * Math.max(0, nextTrackHeight - window.innerHeight)
+        }
+        const lenis = getLenis()
+        if (nextY !== previousY) {
+          if (lenis) lenis.scrollTo(nextY, { immediate: true })
+          else window.scrollTo(0, nextY)
+        }
+        ScrollTrigger.refresh()
+      }
+    }
+
+    const offTier = onTierChange((t) => { if (t !== 'high') deactivateStage(true) })
+
+    return () => {
+      offTier()
+      deactivateStage(false)
     }
   }, [])
 

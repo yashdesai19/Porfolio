@@ -41,7 +41,7 @@ export function canvasDpr(cap: number, w: number, h: number) {
 }
 
 let lastScroll = -1e9
-export const isScrolling = () => performance.now() - lastScroll < 150
+export const isScrolling = () => performance.now() - lastScroll < 500
 
 /**
  * Frame watchdog on GSAP's ticker (no extra rAF). Learns the idle frame interval first, then

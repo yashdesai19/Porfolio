@@ -56,9 +56,12 @@
 }
 .work.is-stage .work__window {
   position: absolute; inset: 0; overflow: hidden;
-  background:
-    radial-gradient(circle, color-mix(in srgb, var(--c-logo) 40%, transparent) 1px, transparent 1.6px) 0 0 / 22px 22px,
-    var(--c-work-bg);
+  background: var(--c-work-bg);
+}
+.work.is-stage .work__window::before {
+  content: ''; position: absolute; inset: 0 -22px; pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-logo) 40%, transparent) 1px, transparent 1.6px) 0 0 / 22px 22px;
+  transform: translate3d(var(--dot-shift, 0px), 0, 0); will-change: transform;
 }
 /* outline drawn just outside the pill; scaled with the hole by JS */
 .work.is-stage .work__ring {
@@ -73,7 +76,7 @@
 /* Flat layering like the reference (letters 1, cards 2, a few letters 3): no shared 3D space, so a turning card never
    cuts through a letter. Wall, rows and list are display: contents, so every letter and card is a direct child of the scene
    and gets its perspective. */
-.work.is-stage .work__scene { position: absolute; inset: 0; perspective: 40rem; }
+.work.is-stage .work__scene { position: absolute; inset: 0; z-index: 1; perspective: 40rem; }
 
 /* Letter rows: stacked tightly around the middle, like the reference */
 .work.is-stage .work__wall, .work.is-stage .wall__row { display: contents; }
@@ -82,7 +85,6 @@
 .wall__letter {
   position: absolute; left: 50%; top: calc(50% + (var(--row) - 1.5) * var(--lh)); z-index: 1; pointer-events: none;
   font: 900 var(--fs)/.85 var(--f-display); font-stretch: 62%; color: var(--c-logo);
-  will-change: transform;
 }
 /* shadow copy behind each letter, scaled and pushed toward the centre → extruded look */
 .wall__letter::before {
@@ -96,7 +98,7 @@
 .work.is-stage .work__list { display: contents; }
 .work.is-stage .wcard {
   position: absolute; left: 50%; top: 50%; z-index: 2; display: block; padding: .5rem .5rem 0; border: 0;
-  background: var(--c-work-bg); visibility: hidden; will-change: transform;
+  background: var(--c-work-bg); visibility: hidden;
 }
 .work.is-stage .wcard__media { width: min(34vw, calc(40svh * 16 / 9)); aspect-ratio: 16 / 9; background: #000; }
 .work.is-stage .wcard:not([data-active]) { pointer-events: none; }

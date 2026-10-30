@@ -31,6 +31,7 @@
 .sc__body { position: relative; min-height: 0; padding: 1.4em 1.8em; opacity: min(clamp(0, var(--t) * 40, 1), clamp(0, (.985 - var(--t)) * 40, 1)); }
 /* paused while the card is off stage */
 .work.is-stage .wcard:not([data-on]) .sc { animation-play-state: paused; }
+html[data-perf='mid'] .sc, html[data-perf='low'] .sc, html:not(.motion) .sc { animation: none; --t: .9; }
 @media (prefers-reduced-motion: reduce) { .sc { animation: none; --t: .9; } }
 
 .sc__bar { display: flex; align-items: center; gap: .45em; padding: .7em 1.1em; border-bottom: 1px solid var(--line); background: var(--panel);
